@@ -1,0 +1,152 @@
+=== File: app/models/string_theory.py ===
+from dataclasses import dataclass, asdict
+import numpy as np
+from typing import List, Dict
+import logging
+
+logger = logging.getLogger(__name__)
+
+@dataclass
+class StringTheorySystem:
+    dimensions: int = 10
+    tension: float = 1.0
+    coupling: float = 0.1
+    alpha_prime: float = 1.0
+    compactification: Dict = None
+
+    def __post_init__(self):
+        if self.compactification is None:
+            self.compactification = {
+                'radius': [1.0] * 6,  # Compactification radii for 6 extra dimensions
+                'topology': 'Calabi-Yau'
+            }
+    
+    def calculate_mass_spectrum(self) -> List[float]:
+        try:
+            n = np.arange(10)
+            return np.sqrt(n / self.alpha_prime).tolist()
+        except Exception as e:
+            logger.error(f"Error calculating mass spectrum: {str(e)}")
+            return []
+    
+    def update_parameters(self, params: Dict) -> None:
+        try:
+            for key, value in params.items():
+                if hasattr(self, key) and key != 'compactification':
+                    setattr(self, key, float(value))
+                elif key == 'compactification_radius':
+                    self.compactification['radius'] = [float(value)] * 6
+            logger.info(f"Parameters updated: {params}")
+        except Exception as e:
+            logger.error(f"Error updating parameters: {str(e)}")
+            raise ValueError(f"Invalid parameters: {str(e)}")
+
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+=== File: app/api/v1/endpoints/string_theory.py ===
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Dict
+from app.schemas.string_theory import StringParameters, SystemState, SystemResponse
+from app.models.string_theory import StringTheorySystem
+from datetime import datetime
+import logging
+
+router = APIRouter()
+system = StringTheorySystem()
+logger = logging.getLogger(__name__)
+
+@router.get("/", response_model=SystemResponse)
+async def get_system_state():
+    """
+    Get current state of the string theory system.
+    """
+    try:
+        state = system.to_dict()
+        state.update({
+            'mass_spectrum': system.calculate_mass_spectrum(),
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        return {
+            "status": "success",
+            "data": state
+        }
+    except Exception as e:
+        logger.error(f"Error getting system state: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
+@router.post("/update", response_model=SystemResponse)
+async def update_parameters(params: StringParameters):
+    """
+    Update string theory system parameters.
+    """
+    try:
+        system.update_parameters(params.dict())
+        state = system.to_dict()
+        state.update({
+            'mass_spectrum': system.calculate_mass_spectrum(),
+            'timestamp': datetime.utcnow().isoformat()
+        })
+        return {
+            "status": "success",
+            "data": state
+        }
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error updating parameters: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
+=== File: tests/test_api.py ===
+import pytest
+from httpx import AsyncClient
+from app.main import app
+
+@pytest.mark.asyncio
+async def test_get_system_state():
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        response = await client.get("/api/v1/string-theory/")
+        assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+        assert data["status"] == "success"
+        assert "data" in data
+
+@pytest.mark.asyncio
+async def test_update_parameters():
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        params = {
+            "dimensions": 11,
+            "tension": 1.5,
+            "coupling": 0.2,
+            "alpha_prime": 1.2,
+            "compactification_radius": 1.1
+        }
+        response = await client.post("/api/v1/string-theory/update", json=params)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "success"
+        assert data["data"]["dimensions"] == 11
+
+=== File: app/api/deps.py ===
+from typing import Generator
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from app.core.config import get_settings
+from datetime import datetime
+
+settings = get_settings()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/login")
+
+async def get_current_time() -> datetime:
+    return datetime.utcnow()
