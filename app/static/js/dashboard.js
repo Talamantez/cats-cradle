@@ -58,7 +58,6 @@ function createControlElement(key, info) {
 
     let input;
     if (info.type === 'select') {
-        // Create select element for topology
         input = document.createElement('select');
         input.id = key;
         input.className = 'border rounded px-3 py-2 w-48';
@@ -69,7 +68,6 @@ function createControlElement(key, info) {
             input.appendChild(option);
         });
     } else {
-        // Create number input for other parameters
         input = document.createElement('input');
         input.type = 'number';
         input.id = key;
@@ -82,12 +80,10 @@ function createControlElement(key, info) {
     labelDiv.appendChild(input);
     controlGroup.appendChild(labelDiv);
 
-    // Create description box
     const description = document.createElement('div');
     description.className = 'bg-blue-50 p-4 rounded-lg';
 
     if (info.type === 'select') {
-        // Add topology-specific description that updates with selection
         const topologyDesc = document.createElement('p');
         topologyDesc.id = `${key}-description`;
         topologyDesc.className = 'text-sm text-blue-800 mb-2';
@@ -96,7 +92,6 @@ function createControlElement(key, info) {
         input.addEventListener('change', () => {
             topologyDesc.textContent = info.options[input.value];
         });
-        // Set initial description
         setTimeout(() => {
             topologyDesc.textContent = info.options[input.value];
         }, 0);
@@ -131,9 +126,101 @@ function createParameterControls() {
         container.appendChild(controlElement);
     }
 
-    // Insert before the mass spectrum div
     const massSpectrumDiv = document.getElementById('massSpectrum');
     massSpectrumDiv.parentElement.insertBefore(container, massSpectrumDiv);
+}
+
+function updateMassSpectrum(spectrum) {
+    // Main spectrum trace
+    const mainTrace = {
+        x: Array.from({length: spectrum.length}, (_, i) => i),
+        y: spectrum,
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Mass Levels',
+        line: {
+            color: '#4299e1',
+            width: 2
+        },
+        marker: {
+            size: 8,
+            color: '#2a4365'
+        }
+    };
+    
+    // Calculate degeneracy (number of states) at each level
+    const degeneracy = spectrum.map((_, i) => {
+        if (i === 0) return 1;  // Ground state
+        return i * Math.pow(2, Math.min(i, 3));  // Simplified degeneracy
+    });
+
+    // Degeneracy trace
+    const degTrace = {
+        x: Array.from({length: spectrum.length}, (_, i) => i),
+        y: degeneracy,
+        yaxis: 'y2',
+        type: 'bar',
+        name: 'States per Level',
+        marker: {
+            color: 'rgba(66, 153, 225, 0.2)'
+        },
+        hovertemplate: '%{y} possible states<extra></extra>'
+    };
+
+    // Calculate fixed y-axis ranges based on the current spectrum
+    const maxMass = Math.max(...spectrum) * 1.1; // Add 10% padding
+    const maxDegeneracy = Math.max(...degeneracy) * 1.1;
+
+    const layout = {
+        title: 'String Mass Spectrum with State Counting',
+        height: 600, // Set a larger height
+        width: window.innerWidth * 0.9, // Make it responsive but not full width
+        xaxis: {
+            title: 'Energy Level (n)',
+            gridcolor: 'rgba(0,0,0,0.1)',
+            range: [-0.5, spectrum.length - 0.5] // Fix x-axis range
+        },
+        yaxis: {
+            title: 'Mass (M)',
+            titlefont: {color: '#2a4365'},
+            tickfont: {color: '#2a4365'},
+            gridcolor: 'rgba(0,0,0,0.1)',
+            range: [0, maxMass], // Fix primary y-axis range
+            fixedrange: true // Prevent zooming/panning
+        },
+        yaxis2: {
+            title: 'Number of States',
+            titlefont: {color: '#4299e1'},
+            tickfont: {color: '#4299e1'},
+            overlaying: 'y',
+            side: 'right',
+            showgrid: false,
+            range: [0, maxDegeneracy], // Fix secondary y-axis range
+            fixedrange: true // Prevent zooming/panning
+        },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+        },
+        showlegend: true,
+        legend: {
+            x: 0,
+            y: 1.2
+        },
+        // Add margin to prevent cutting off
+        margin: {
+            l: 80,  // Increased left margin for axis labels
+            r: 80,  // Increased right margin for secondary axis
+            t: 100, // More space for title
+            b: 80   // More space for x-axis labels
+        }
+    };
+
+    Plotly.newPlot('massSpectrum', [mainTrace, degTrace], layout, {
+        displayModeBar: false, // Hide the modebar
+        responsive: true // Make the plot responsive
+    });
 }
 
 function updateDisplay() {
@@ -173,86 +260,12 @@ function updateDisplay() {
     });
 }
 
-function updateMassSpectrum(spectrum) {
-    // Main spectrum trace
-    const mainTrace = {
-        x: Array.from({length: spectrum.length}, (_, i) => i),
-        y: spectrum,
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Mass Levels',
-        line: {
-            color: '#4299e1',
-            width: 2
-        },
-        marker: {
-            size: 8,
-            color: '#2a4365'
-        }
-    };
-    
-    // Calculate degeneracy (number of states) at each level
-    const degeneracy = spectrum.map((_, i) => {
-        if (i === 0) return 1;  // Ground state
-        // Higher states have more possible configurations
-        return i * Math.pow(2, Math.min(i, 3));  // Simplified degeneracy
-    });
-
-    // Degeneracy trace
-    const degTrace = {
-        x: Array.from({length: spectrum.length}, (_, i) => i),
-        y: degeneracy,
-        yaxis: 'y2',
-        type: 'bar',
-        name: 'States per Level',
-        marker: {
-            color: 'rgba(66, 153, 225, 0.2)'
-        },
-        hovertemplate: '%{y} possible states<extra></extra>'
-    };
-
-    const layout = {
-        title: 'String Mass Spectrum with State Counting',
-        xaxis: {
-            title: 'Energy Level (n)',
-            gridcolor: 'rgba(0,0,0,0.1)'
-        },
-        yaxis: {
-            title: 'Mass (M)',
-            titlefont: {color: '#2a4365'},
-            tickfont: {color: '#2a4365'},
-            gridcolor: 'rgba(0,0,0,0.1)'
-        },
-        yaxis2: {
-            title: 'Number of States',
-            titlefont: {color: '#4299e1'},
-            tickfont: {color: '#4299e1'},
-            overlaying: 'y',
-            side: 'right',
-            showgrid: false
-        },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {
-            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        },
-        showlegend: true,
-        legend: {
-            x: 0,
-            y: 1.2
-        }
-    };
-
-    Plotly.newPlot('massSpectrum', [mainTrace, degTrace], layout);
-}
-
 function updateInputs(data) {
     Object.keys(parameterInfo).forEach(key => {
         const input = document.getElementById(key);
         if (input) {
             if (key === 'topology' && data.compactification) {
                 input.value = data.compactification.topology;
-                // Also update the description
                 const desc = document.getElementById(`${key}-description`);
                 if (desc) {
                     desc.textContent = parameterInfo[key].options[data.compactification.topology];
@@ -309,7 +322,6 @@ function addEventListeners() {
         const input = document.getElementById(key);
         if (input) {
             if (parameterInfo[key].type === 'select') {
-                // Add debouncing for topology changes
                 input.addEventListener('change', async () => {
                     lastUpdateTime = Date.now();
                     await updateSystem();
