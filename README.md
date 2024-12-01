@@ -44,6 +44,13 @@ The Cat's Cradle dashboard provides:
   - String Tension
   - Coupling Constant
   - α' (Alpha Prime)
+  - Compare Topologies:
+      TOPOLOGY_FACTORS = {
+        "Calabi-Yau": 1.0,  # Standard case
+        "Torus": 0.8,       # Simpler topology
+        "Orbifold": 1.2,    # More complex spectrum
+        "K3": 1.5           # Rich structure with supersymmetry
+    }
 - Real-time mass spectrum visualization
 - Live system state monitoring
 - Automatic parameter validation

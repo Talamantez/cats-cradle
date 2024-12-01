@@ -1,6 +1,8 @@
 # File: app/schemas/string_theory.py
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
+
+TopologyType = Literal["Calabi-Yau", "Torus", "Orbifold", "K3"]
 
 class StringParameters(BaseModel):
     dimensions: Optional[int] = Field(None, ge=4, le=26)
@@ -8,6 +10,7 @@ class StringParameters(BaseModel):
     coupling: Optional[float] = Field(None, gt=0)
     alpha_prime: Optional[float] = Field(None, gt=0)
     compactification_radius: Optional[float] = Field(None, gt=0)
+    topology: Optional[TopologyType] = None
 
 class SystemState(BaseModel):
     dimensions: int
