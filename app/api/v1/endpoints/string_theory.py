@@ -38,7 +38,7 @@ async def update_parameters(params: StringParameters):
     Update string theory system parameters.
     """
     try:
-        system.update_parameters(params.dict())
+        system.update_parameters(params.model_dump(exclude_unset=True))  # <-- This line goes here
         state = system.to_dict()
         state.update({
             'mass_spectrum': system.calculate_mass_spectrum(),
