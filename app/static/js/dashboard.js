@@ -77,12 +77,13 @@ async function updateDisplay() {
 }
 
 function updateMassSpectrum(spectrum) {
-  const trace = {
+  // Main spectrum trace
+  const mainTrace = {
       x: Array.from({length: spectrum.length}, (_, i) => i),
       y: spectrum,
       type: 'scatter',
       mode: 'lines+markers',
-      name: 'Mass Spectrum',
+      name: 'Mass Levels',
       line: {
           color: '#4299e1',
           width: 2
@@ -92,23 +93,60 @@ function updateMassSpectrum(spectrum) {
           color: '#2a4365'
       }
   };
+  
+  // Calculate degeneracy (number of states) at each level
+  const degeneracy = spectrum.map((_, i) => {
+      if (i === 0) return 1;  // Ground state
+      // Higher states have more possible configurations
+      return i * Math.pow(2, Math.min(i, 3));  // Simplified degeneracy
+  });
+
+  // Degeneracy trace
+  const degTrace = {
+      x: Array.from({length: spectrum.length}, (_, i) => i),
+      y: degeneracy,
+      yaxis: 'y2',
+      type: 'bar',
+      name: 'States per Level',
+      marker: {
+          color: 'rgba(66, 153, 225, 0.2)'
+      },
+      hovertemplate: '%{y} possible states<extra></extra>'
+  };
 
   const layout = {
-      title: 'String Mass Spectrum',
+      title: 'String Mass Spectrum with State Counting',
       xaxis: {
-          title: 'Energy Level (n)'
+          title: 'Energy Level (n)',
+          gridcolor: 'rgba(0,0,0,0.1)'
       },
       yaxis: {
-          title: 'Mass (M)'
+          title: 'Mass (M)',
+          titlefont: {color: '#2a4365'},
+          tickfont: {color: '#2a4365'},
+          gridcolor: 'rgba(0,0,0,0.1)'
+      },
+      yaxis2: {
+          title: 'Number of States',
+          titlefont: {color: '#4299e1'},
+          tickfont: {color: '#4299e1'},
+          overlaying: 'y',
+          side: 'right',
+          showgrid: false
       },
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor: 'rgba(0,0,0,0)',
       font: {
           family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      },
+      showlegend: true,
+      legend: {
+          x: 0,
+          y: 1.2
       }
   };
 
-  Plotly.newPlot('massSpectrum', [trace], layout);
+  Plotly.newPlot('massSpectrum', [mainTrace, degTrace], layout);
 }
 
 function updateInputs(data) {
