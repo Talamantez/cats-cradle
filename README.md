@@ -64,7 +64,7 @@ pytest
 
 ## Contributing
 
-We welcome contributions to the Cats Cradle project. If you find any issues or have ideas for improvements, please open an issue on the [GitHub repository](https://github.com/your-username/cats-cradle/issues).
+We welcome contributions to the Cats Cradle project. If you find any issues or have ideas for improvements, please open an issue on the [GitHub repository](https://github.com/talamantez/cats-cradle/issues).
 
 ## Changelog
 
