@@ -3,90 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>String Theory Dashboard</title>
+    <title>String Theory Explorer</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f7f9fc;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .param-group {
-            margin-bottom: 15px;
-        }
-        .param-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 200px;
-        }
-        button {
-            background: #4299e1;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #2b6cb0;
-        }
-        #massSpectrum {
-            margin-top: 20px;
-            min-height: 400px;
-        }
-        #stateDisplay {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f7f9fc;
-            border-radius: 4px;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>String Theory Dashboard</h1>
-        
-        <div class="controls">
-            <h2>Parameters</h2>
-            <div class="param-group">
-                <label for="dimensions">Dimensions:</label>
-                <input type="number" id="dimensions" min="4" max="26" step="1">
-            </div>
-            <div class="param-group">
-                <label for="tension">String Tension:</label>
-                <input type="number" id="tension" min="0.1" step="0.1">
-            </div>
-            <div class="param-group">
-                <label for="coupling">Coupling Constant:</label>
-                <input type="number" id="coupling" min="0.01" step="0.01">
-            </div>
-            <div class="param-group">
-                <label for="alpha_prime">α' (Alpha Prime):</label>
-                <input type="number" id="alpha_prime" min="0.1" step="0.1">
-            </div>
-            <button onclick="updateSystem()">Update System</button>
-        </div>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-4">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-4">String Theory Explorer</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                Welcome to your interactive string theory laboratory! Adjust the parameters 
+                below to see how they affect the string spectrum. This is a simplified model 
+                designed to help build intuition about string theory concepts.
+            </p>
+        </header>
 
-        <div id="massSpectrum"></div>
-        <div id="stateDisplay"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Column: Controls and Spectrum -->
+            <div class="space-y-8">
+                <!-- Parameter controls will be injected here by JavaScript -->
+                <div id="massSpectrum" class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-2">Mass Spectrum</h2>
+                    <p class="text-gray-600 mb-4">
+                        Watch how the string's energy levels change as you adjust the parameters.
+                        Each point represents a possible vibration mode of the string.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column: Current State and Notes -->
+            <div class="space-y-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4">System State</h2>
+                    <pre id="stateDisplay" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-4">Physics Notes</h2>
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="font-semibold mb-2">Mass Formula:</h3>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-blue-800 font-mono">M = √(n/α') * √T * √(D/10)</p>
+                            </div>
+                            <ul class="list-disc ml-6 mt-2 text-gray-700">
+                                <li>n: energy level (0 = ground state)</li>
+                                <li>α': fundamental string length scale</li>
+                                <li>T: string tension</li>
+                                <li>D: number of dimensions</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold mb-2">Key Points:</h3>
+                            <ul class="list-disc ml-6 text-gray-700">
+                                <li>Ground state (n=0) stays at zero mass</li>
+                                <li>Higher states scale with √tension</li>
+                                <li>10D is special (superstring theory)</li>
+                                <li>Extra dimensions are rolled up very small</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script src="/static/js/dashboard.js"></script>
 </body>
 </html>

@@ -1,104 +1,173 @@
 // app/static/js/dashboard.js
 
-// Initialize the dashboard
-async function initDashboard() {
-    await updateDisplay();
-    setInterval(updateDisplay, 5000); // Update every 5 seconds
+const parameterInfo = {
+  dimensions: {
+      label: "Dimensions",
+      description: "Think of this as the number of directions strings can move in. While we see 4 dimensions (up/down, left/right, forward/back, and time), strings need more! The extra dimensions are curled up super tiny. 10D is special for superstrings.",
+      min: 4,
+      max: 26
+  },
+  tension: {
+      label: "String Tension (T)",
+      description: "Just like a guitar string, this is how 'tight' our strings are! Higher tension means they vibrate with more energy, like tightening a guitar string makes higher notes. This scales all excited states by √T.",
+      min: 0.000001,
+      max: 1000000
+  },
+  coupling: {
+      label: "Coupling Constant (g)",
+      description: "How strongly strings interact with each other, like the strength of magnets. A smaller number means weaker interactions. We keep this small because it makes our calculations work better!",
+      min: 0.000001,
+      max: 1
+  },
+  alpha_prime: {
+      label: "α' (Alpha Prime)",
+      description: "This sets how big our strings are! It's like a conversion between energy and length. Smaller α' means shorter strings and higher energies. The mass formula uses this as M² = n/α'.",
+      min: 0.000001,
+      max: 100
+  }
+};
+
+function createParameterControls() {
+  const container = document.createElement('div');
+  container.className = 'bg-white rounded-lg shadow p-6 mb-8';
+  container.innerHTML = `
+      <h2 class="text-2xl font-bold mb-4">String Theory Parameters</h2>
+      <p class="text-gray-600 mb-6">Adjust these values to explore how they affect the string spectrum!</p>
+  `;
+
+  for (const [key, info] of Object.entries(parameterInfo)) {
+      const controlGroup = document.createElement('div');
+      controlGroup.className = 'mb-6';
+      controlGroup.innerHTML = `
+          <div class="flex justify-between items-center mb-2">
+              <label for="${key}" class="font-medium text-gray-700">${info.label}</label>
+              <input type="number" 
+                     id="${key}" 
+                     min="${info.min}" 
+                     max="${info.max}" 
+                     step="${key === 'dimensions' ? '1' : 'any'}"
+                     class="border rounded px-3 py-2 w-32 text-right">
+          </div>
+          <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-sm text-blue-800">${info.description}</p>
+              <p class="text-xs text-blue-600 mt-2">Valid range: ${info.min} to ${info.max}</p>
+          </div>
+      `;
+      container.appendChild(controlGroup);
+  }
+
+  // Insert before the mass spectrum div
+  const massSpectrumDiv = document.getElementById('massSpectrum');
+  massSpectrumDiv.parentElement.insertBefore(container, massSpectrumDiv);
 }
 
-// Fetch and display current system state
 async function updateDisplay() {
-    try {
-        const response = await fetch('/api/v1/string-theory/');
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            updateInputs(data.data);
-            updateMassSpectrum(data.data.mass_spectrum);
-            updateStateDisplay(data.data);
-        }
-    } catch (error) {
-        console.error('Error fetching system state:', error);
-    }
+  try {
+      const response = await fetch('/api/v1/string-theory/');
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+          updateInputs(data.data);
+          updateMassSpectrum(data.data.mass_spectrum);
+          updateStateDisplay(data.data);
+      }
+  } catch (error) {
+      console.error('Error fetching system state:', error);
+  }
 }
 
-// Update the mass spectrum visualization
 function updateMassSpectrum(spectrum) {
-    const trace = {
-        x: Array.from({length: spectrum.length}, (_, i) => i),
-        y: spectrum,
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Mass Spectrum',
-        line: {
-            color: '#4299e1',
-            width: 2
-        },
-        marker: {
-            size: 8,
-            color: '#2a4365'
-        }
-    };
+  const trace = {
+      x: Array.from({length: spectrum.length}, (_, i) => i),
+      y: spectrum,
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Mass Spectrum',
+      line: {
+          color: '#4299e1',
+          width: 2
+      },
+      marker: {
+          size: 8,
+          color: '#2a4365'
+      }
+  };
 
-    const layout = {
-        title: 'String Mass Spectrum',
-        xaxis: {
-            title: 'Energy Level'
-        },
-        yaxis: {
-            title: 'Mass (M)'
-        },
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        font: {
-            family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-        }
-    };
+  const layout = {
+      title: 'String Mass Spectrum',
+      xaxis: {
+          title: 'Energy Level (n)'
+      },
+      yaxis: {
+          title: 'Mass (M)'
+      },
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      font: {
+          family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }
+  };
 
-    Plotly.newPlot('massSpectrum', [trace], layout);
+  Plotly.newPlot('massSpectrum', [trace], layout);
 }
 
-// Update input fields with current values
 function updateInputs(data) {
-    document.getElementById('dimensions').value = data.dimensions;
-    document.getElementById('tension').value = data.tension;
-    document.getElementById('coupling').value = data.coupling;
-    document.getElementById('alpha_prime').value = data.alpha_prime;
+  Object.keys(parameterInfo).forEach(key => {
+      const input = document.getElementById(key);
+      if (input && data[key] !== undefined) {
+          input.value = data[key];
+      }
+  });
 }
 
-// Update the state display
 function updateStateDisplay(data) {
-    const display = document.getElementById('stateDisplay');
-    display.textContent = JSON.stringify(data, null, 2);
+  const display = document.getElementById('stateDisplay');
+  display.textContent = JSON.stringify(data, null, 2);
 }
 
-// Send updated parameters to the server
 async function updateSystem() {
-    const params = {
-        dimensions: parseInt(document.getElementById('dimensions').value),
-        tension: parseFloat(document.getElementById('tension').value),
-        coupling: parseFloat(document.getElementById('coupling').value),
-        alpha_prime: parseFloat(document.getElementById('alpha_prime').value)
-    };
+  const params = {};
+  Object.keys(parameterInfo).forEach(key => {
+      const input = document.getElementById(key);
+      if (input) {
+          const value = input.type === 'number' ? parseFloat(input.value) : input.value;
+          params[key] = value;
+      }
+  });
 
-    try {
-        const response = await fetch('/api/v1/string-theory/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(params)
-        });
-        
-        const data = await response.json();
-        if (data.status === 'success') {
-            updateMassSpectrum(data.data.mass_spectrum);
-            updateStateDisplay(data.data);
-        }
-    } catch (error) {
-        console.error('Error updating system:', error);
-    }
+  try {
+      const response = await fetch('/api/v1/string-theory/update', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(params)
+      });
+      
+      const data = await response.json();
+      if (data.status === 'success') {
+          updateMassSpectrum(data.data.mass_spectrum);
+          updateStateDisplay(data.data);
+      }
+  } catch (error) {
+      console.error('Error updating system:', error);
+  }
 }
 
-// Initialize when the page loads
+function addEventListeners() {
+  Object.keys(parameterInfo).forEach(key => {
+      const input = document.getElementById(key);
+      if (input) {
+          input.addEventListener('change', updateSystem);
+      }
+  });
+}
+
+function initDashboard() {
+  createParameterControls();
+  updateDisplay();
+  addEventListeners();
+  setInterval(updateDisplay, 5000);
+}
+
 document.addEventListener('DOMContentLoaded', initDashboard);
