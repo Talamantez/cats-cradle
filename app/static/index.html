@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Theory Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f7f9fc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .param-group {
+            margin-bottom: 15px;
+        }
+        .param-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2b6cb0;
+        }
+        #massSpectrum {
+            margin-top: 20px;
+            min-height: 400px;
+        }
+        #stateDisplay {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7f9fc;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>String Theory Dashboard</h1>
+        
+        <div class="controls">
+            <h2>Parameters</h2>
+            <div class="param-group">
+                <label for="dimensions">Dimensions:</label>
+                <input type="number" id="dimensions" min="4" max="26" step="1">
+            </div>
+            <div class="param-group">
+                <label for="tension">String Tension:</label>
+                <input type="number" id="tension" min="0.1" step="0.1">
+            </div>
+            <div class="param-group">
+                <label for="coupling">Coupling Constant:</label>
+                <input type="number" id="coupling" min="0.01" step="0.01">
+            </div>
+            <div class="param-group">
+                <label for="alpha_prime">α' (Alpha Prime):</label>
+                <input type="number" id="alpha_prime" min="0.1" step="0.1">
+            </div>
+            <button onclick="updateSystem()">Update System</button>
+        </div>
+
+        <div id="massSpectrum"></div>
+        <div id="stateDisplay"></div>
+    </div>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
