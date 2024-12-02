@@ -97,3 +97,4 @@ This simulation implements basic string theory concepts:
 - String tension and coupling parameters control string interactions
 - Alpha prime (α') determines the characteristic string length scale
 - Mass spectrum follows the relationship M² = n/α'
+- Topology:  The study of the fundamental shape and connectivity of spacetime
