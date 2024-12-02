@@ -1,6 +1,6 @@
 # Cat's Cradle - String Theory Explorer
 
-Cat's Cradle is a web application that provides a dashboard for visualizing and interacting with a string theory simulation. Users can view the current state of the system, update various parameters, and observe the changes in the mass spectrum.
+Cat's Cradle is a Mass Spectrum Equation simulator for various topologies in the form of a web application that provides a dashboard for visualizing and interacting with the string theory simulation. Users can view the current state of the system, update various parameters, and observe the changes in the mass spectrum.
 
 ## Table of Contents
 - [Installation](#installation)
